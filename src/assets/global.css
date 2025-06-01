@@ -1,0 +1,12 @@
+.form-group {
+    @apply grid grid-cols-12 gap-4;
+    & label {
+        @apply col-span-4 md:col-span-2 md:col-start-3;
+    }
+    & .input-group {
+        @apply col-span-8 md:col-span-6;
+        & > * {
+            @apply w-full;
+        }
+    }
+}

@@ -12,6 +12,7 @@ interface FormField {
   type?: string;
   ignore?: boolean;
   options?: Array<{ label: string; value: string | number }>;
+  attrs: Record<string, any>;
 }
 
 interface HtmlSchemaField {
@@ -33,6 +34,7 @@ class TextFieldRenderer implements FieldRenderer {
         id: field.name,
         name: field.name,
         value: value ?? '',
+        ...field.attrs || {}
       },
     };
   }
@@ -42,7 +44,11 @@ class TextareaFieldRenderer implements FieldRenderer {
   render(field: FormField, value?: any): HtmlSchemaField {
     return {
       $el: 'textarea',
-      attrs: { id: field.name, name: field.name },
+      attrs: { 
+        id: field.name, 
+        name: field.name,
+        ...field.attrs || {} 
+      },
       children: [value ?? ''],
     };
   }
@@ -52,7 +58,11 @@ class SelectFieldRenderer implements FieldRenderer {
   render(field: FormField, value?: any): HtmlSchemaField {
     return {
       $el: 'select',
-      attrs: { id: field.name, name: field.name },
+      attrs: { 
+        id: field.name, 
+        name: field.name,
+        ...field.attrs || {}
+      },
       children: (field.options || []).map((opt) => ({
         $el: 'option',
         attrs: {
@@ -72,7 +82,9 @@ class ChoiceFieldRenderer implements FieldRenderer {
     const selectedValues = Array.isArray(value) ? value : [value];
     return {
       $el: 'div',
-      attrs: { class: '' },
+      attrs: { 
+        ...field.attrs || {}
+      },
       children: (field.options || []).map((opt) => ({
         $el: 'div',
         children: [
@@ -150,8 +162,17 @@ export class FormBuilder {
 
     return {
       $el: 'div',
-      attrs: { class: 'form-group flex justify-between gap-2' },
-      children: [labelNode, inputNode],
+      attrs: { class: 'form-group' },
+      children: [
+        labelNode, 
+        {
+          $el:'div',
+          attrs: { class: 'input-group' },
+          children: [
+            inputNode
+          ]
+        }
+      ],
     };
   }
 }

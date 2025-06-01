@@ -1,4 +1,5 @@
 ---
+import '../assets/global.css'
 interface Props {
   title?: string;
 }
@@ -32,12 +33,7 @@ const { title = "Admin Dashboard" } = Astro.props;
       <!-- Sidebar -->
       <aside 
         class="fixed inset-y-0 left-0 z-30 bg-white shadow-lg transition-all duration-300 lg:static flex flex-col"
-        :class="{
-          'w-64': sidebarOpen || (!sidebarOpen && isHovered),
-          'w-20': !sidebarOpen && !isHovered,
-          'translate-x-0': sidebarOpen,
-          '-translate-x-full lg:translate-x-0': !sidebarOpen
-        }"
+        :class="{ 'w-64': sidebarOpen || (!sidebarOpen && isHovered), 'w-20': !sidebarOpen && !isHovered, 'translate-x-0': sidebarOpen, '-translate-x-full lg:translate-x-0': !sidebarOpen}"
         @mouseenter="if(!sidebarOpen) isHovered = true"
         @mouseleave="if(!sidebarOpen) isHovered = false"
       >
