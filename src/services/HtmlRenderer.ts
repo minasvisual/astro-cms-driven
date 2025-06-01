@@ -115,15 +115,13 @@ export class HTMLRenderer {
       iterates.map(async (row, index) => {
         const $row = isObject ? list[row] : row;
         const $key = isObject ? row : index;
-        node.children.map((child) =>
-          proms.push(this.renderNode(child, { ...data, $row, $key }))
-        );
+        proms.push(this.renderNode(_.omit(node, ['$for']), { ...data, $row, $key }))
       });
       children = (await Promise.all(proms)).join('');
     } else {
       children = (
         await Promise.all(
-          node.children.map(async (child) => this.renderNode(child, data))
+          (Array.isArray(node.children) ? node.children:[node.children]).map(async (child) => this.renderNode(child, data))
         )
       ).join('');
     }
@@ -166,7 +164,7 @@ export class HTMLRenderer {
       return `${openingTagComplete}</${tag}>`;
     }
 
-    let children = await this.renderLoop(node, data);
+    let children = await this.renderLoop(node, data); 
 
     return `${openingTagComplete}${children}</${tag}>`;
   }

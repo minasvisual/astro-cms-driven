@@ -130,7 +130,7 @@ export class ResourceService {
 
     // Paginação
     if (pagination) {
-      if (pg.pageField) result[pg.pageField] = pagination.page;
+      if (pg.pageField) result[pg.pageField] = pagination.page || 1;
       if (pg.limitField) result[pg.limitField] = pagination.limit;
     }
 
@@ -151,6 +151,7 @@ export class ResourceService {
       if (
         val === undefined ||
         val === null ||
+        val === '' ||
         (typeof val === 'number' && isNaN(val))
       )
         continue;
@@ -193,6 +194,7 @@ export class ResourceService {
     const url = this.buildUrl(this.config.urlGet, { query: '' }, '/');
     const fullUrl = `${url}${this.buildQueryParams(allParams)}`;
 
+    console.debug('Fetching URL:', fullUrl)
     const res = await fetch(fullUrl, {
       method: this.config.methodGet || 'GET',
       headers: this.buildHeaders(allParams),
