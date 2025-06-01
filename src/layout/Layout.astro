@@ -1,0 +1,267 @@
+---
+interface Props {
+  title?: string;
+}
+
+const { title = "Admin Dashboard" } = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title} - AstroAdmin</title>
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css" />
+  </head>
+  <body class="bg-gray-50" x-data="{ sidebarOpen: true, searchOpen: false, profileOpen: false, isHovered: false }">
+    <div class="flex h-screen">
+      <!-- Sidebar Overlay - only for mobile -->
+      <div 
+        x-show="sidebarOpen" 
+        @click="sidebarOpen = false" 
+        class="fixed inset-0 z-20 bg-black bg-opacity-50 transition-opacity lg:hidden"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+      ></div>
+
+      <!-- Sidebar -->
+      <aside 
+        class="fixed inset-y-0 left-0 z-30 bg-white shadow-lg transition-all duration-300 lg:static flex flex-col"
+        :class="{
+          'w-64': sidebarOpen || (!sidebarOpen && isHovered),
+          'w-20': !sidebarOpen && !isHovered,
+          'translate-x-0': sidebarOpen,
+          '-translate-x-full lg:translate-x-0': !sidebarOpen
+        }"
+        @mouseenter="if(!sidebarOpen) isHovered = true"
+        @mouseleave="if(!sidebarOpen) isHovered = false"
+      >
+        <div class="flex items-center h-16 px-6 border-b">
+          <a href="/" class="flex items-center gap-2 transition-all duration-300" :class="{ 'justify-center': !sidebarOpen && !isHovered }">
+            <span class="text-xl font-semibold text-blue-600" x-show="sidebarOpen || (!sidebarOpen && isHovered)">AstroAdmin</span>
+            <span class="text-xl font-semibold text-blue-600" x-show="!sidebarOpen && !isHovered">A</span>
+          </a>
+        </div>
+        <nav class="p-4 flex-1">
+          <ul class="space-y-1.5">
+            <li>
+              <a href="/" class="flex items-center px-3 py-2 text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 group"
+                x-data
+                x-tooltip="!sidebarOpen && !isHovered ? 'Dashboard' : ''"
+              >
+                <svg class="w-5 h-5" :class="(sidebarOpen || isHovered) ? 'mr-3' : 'mx-auto'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 12L5 10M5 10L12 3L19 10M5 10V20C5 20.5523 5.44772 21 6 21H9M19 10L21 12M19 10V20C19 20.5523 18.5523 21 18 21H15M9 21C9.55228 21 10 20.5523 10 20V16C10 15.4477 10.4477 15 11 15H13C13.5523 15 14 15.4477 14 16V20C14 20.5523 14.4477 21 15 21M9 21H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span x-show="sidebarOpen || isHovered">Dashboard</span>
+              </a>
+            </li>
+            <li>
+              <a href="/tables" class="flex items-center px-3 py-2 text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 group"
+                x-data
+                x-tooltip="!sidebarOpen && !isHovered ? 'Tables' : ''"
+              >
+                <svg class="w-5 h-5" :class="(sidebarOpen || isHovered) ? 'mr-3' : 'mx-auto'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span x-show="sidebarOpen || isHovered">Tables</span>
+              </a>
+            </li>
+            <li>
+              <a href="/grid" class="flex items-center px-3 py-2 text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 group"
+                x-data
+                x-tooltip="!sidebarOpen && !isHovered ? 'Grid View' : ''"
+              >
+                <svg class="w-5 h-5" :class="(sidebarOpen || isHovered) ? 'mr-3' : 'mx-auto'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 6C4 4.89543 4.89543 4 6 4H8C9.10457 4 10 4.89543 10 6V8C10 9.10457 9.10457 10 8 10H6C4.89543 10 4 9.10457 4 8V6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M14 6C14 4.89543 14.8954 4 16 4H18C19.1046 4 20 4.89543 20 6V8C20 9.10457 19.1046 10 18 10H16C14.8954 10 14 9.10457 14 8V6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M4 16C4 14.8954 4.89543 14 6 14H8C9.10457 14 10 14.8954 10 16V18C10 19.1046 9.10457 20 8 20H6C4.89543 20 4 19.1046 4 18V16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M14 16C14 14.8954 14.8954 14 16 14H18C19.1046 14 20 14.8954 20 16V18C20 19.1046 19.1046 20 18 20H16C14.8954 20 14 19.1046 14 18V16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span x-show="sidebarOpen || isHovered">Grid View</span>
+              </a>
+            </li>
+            <li>
+              <a href="/kanban" class="flex items-center px-3 py-2 text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 group"
+                x-data
+                x-tooltip="!sidebarOpen && !isHovered ? 'Kanban' : ''"
+              >
+                <svg class="w-5 h-5" :class="(sidebarOpen || isHovered) ? 'mr-3' : 'mx-auto'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H9C10.1046 21 11 20.1046 11 19V7C11 5.89543 10.1046 5 9 5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M17 5H15C13.8954 5 13 5.89543 13 7V13C13 14.1046 13.8954 15 15 15H17C18.1046 15 19 14.1046 19 13V7C19 5.89543 18.1046 5 17 5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span x-show="sidebarOpen || isHovered">Kanban</span>
+              </a>
+            </li>
+            <li>
+              <a href="/settings" class="flex items-center px-3 py-2 text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 group"
+                x-data
+                x-tooltip="!sidebarOpen && !isHovered ? 'Settings' : ''"
+              >
+                <svg class="w-5 h-5" :class="(sidebarOpen || isHovered) ? 'mr-3' : 'mx-auto'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span x-show="sidebarOpen || isHovered">Settings</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+        
+        <!-- Footer Links -->
+        <div class="p-4 border-t">
+          <ul class="space-y-1.5">
+            <li>
+              <a href="/settings" class="flex items-center px-3 py-2 text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 group"
+                x-data
+                x-tooltip="!sidebarOpen && !isHovered ? 'Settings' : ''"
+              >
+                <svg class="w-5 h-5" :class="(sidebarOpen || isHovered) ? 'mr-3' : 'mx-auto'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span x-show="sidebarOpen || isHovered">Settings</span>
+              </a>
+            </li>
+            <li>
+              <a href="/logout" class="flex items-center px-3 py-2 text-red-600 rounded-lg hover:bg-red-50 group"
+                x-data
+                x-tooltip="!sidebarOpen && !isHovered ? 'Logout' : ''"
+              >
+                <svg class="w-5 h-5" :class="(sidebarOpen || isHovered) ? 'mr-3' : 'mx-auto'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17 16L21 12M21 12L17 8M21 12H9M9 21H7C5.89543 21 5 20.1046 5 19V5C5 3.89543 5.89543 3 7 3H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span x-show="sidebarOpen || isHovered">Logout</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Top navbar -->
+        <header class="bg-white border-b">
+          <div class="flex items-center justify-between px-6 h-16">
+            <div class="flex items-center">
+              <button 
+                @click="sidebarOpen = !sidebarOpen" 
+                class="text-gray-500 hover:text-gray-600"
+                x-data
+                x-tooltip="sidebarOpen ? 'Collapse Sidebar' : 'Expand Sidebar'"
+              >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+              </button>
+              <h2 class="text-xl font-semibold text-gray-800 ml-4">{title}</h2>
+            </div>
+            <div class="flex items-center gap-4">
+              <!-- Mobile search button -->
+              <button 
+                @click="searchOpen = !searchOpen"
+                class="md:hidden text-gray-500 hover:text-gray-600"
+              >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+              </button>
+
+              <!-- Search input - hidden on mobile, shown as overlay when searchOpen is true -->
+              <div 
+                x-show="searchOpen"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 transform scale-95"
+                x-transition:enter-end="opacity-100 transform scale-100"
+                x-transition:leave="transition ease-in duration-100"
+                x-transition:leave-start="opacity-100 transform scale-100"
+                x-transition:leave-end="opacity-0 transform scale-95"
+                class="absolute top-0 left-0 right-0 z-50 bg-white p-4 md:hidden"
+              >
+                <div class="relative">
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    class="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    @click.away="searchOpen = false"
+                  />
+                  <button 
+                    @click="searchOpen = false"
+                    class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Desktop search input -->
+              <div class="relative hidden md:block">
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  class="w-64 px-4 py-2 pr-8 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <svg class="absolute right-3 top-2.5 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+
+              <!-- Profile dropdown -->
+              <div class="relative" x-data="{ open: false }">
+                <button 
+                  @click="open = !open"
+                  class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold focus:outline-none"
+                >
+                  U
+                </button>
+                <!-- Dropdown menu -->
+                <div
+                  x-show="open"
+                  @click.away="open = false"
+                  x-transition:enter="transition ease-out duration-100"
+                  x-transition:enter-start="transform opacity-0 scale-95"
+                  x-transition:enter-end="transform opacity-100 scale-100"
+                  x-transition:leave="transition ease-in duration-75"
+                  x-transition:leave-start="transform opacity-100 scale-100"
+                  x-transition:leave-end="transform opacity-0 scale-95"
+                  class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 z-50"
+                >
+                  <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your Profile</a>
+                  <a href="/settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+                  <a href="/help" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Help Center</a>
+                  <div class="border-t border-gray-100"></div>
+                  <a href="/logout" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Sign out</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Main content area -->
+        <main class="flex-1 overflow-auto p-6">
+          <slot />
+        </main>
+      </div>
+    </div>
+
+    <script>
+      import tippy from 'tippy.js';
+      
+      // Initialize tooltips
+      document.addEventListener('alpine:init', () => {
+        Alpine.directive('tooltip', (el, { expression }) => {
+          tippy(el, {
+            content: expression,
+            placement: 'right',
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

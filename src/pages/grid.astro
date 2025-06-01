@@ -1,0 +1,176 @@
+---
+import Layout from '../layout/Layout.astro';
+import { HTMLRenderer } from "../services/HtmlRenderer";
+import { sections, sectionResolver } from '../services/RenderResolvers'
+const formStructure = {
+	$el: 'div',
+  children: [
+    {
+      $el: 'div',
+      attrs: {
+        id: 'container',
+        class: 'main-content',
+        'data-role': 'page'
+      },
+      children: [
+        { $section:'header', },
+        { $section:'menu' },
+        {
+          $el: 'p',
+          attrs: {
+            class: 'text-2xl'
+          },
+          children: ['Olá ${name} Título Principal']
+        },
+        {
+          $el: 'p',
+          attrs: {
+            class: 'description'
+          },
+          children: [
+            'Este é um parágrafo com ',
+            {
+              $el: 'strong',
+              children: ['${email}']
+            },
+            ' e um ',
+            {
+              $el: 'a',
+              attrs: {
+                href: 'https://exemplo.com',
+                target: '_blank'
+              },
+              children: ['link']
+            }
+          ]
+        },
+        "${isAdmin ? '<span class=\"admin\">Administrador</span>' : ''}",
+        ` <p>Frutas</p>
+        	<ul class="menu ">
+            <% _.forEach(list, function(user) { %>
+              <li class="text-red-500"><%- user %></li>
+            <% }); %>
+          </ul>
+        `,
+      	'Preço: ${formatCurrency(price)}',
+        '<br/>', 
+        { $section:'table', },
+        { $section:'footer', },
+      ]
+    } 
+  ]
+};
+const userData = {
+  id: 123,
+  name: "Maria Silva",
+  email: "maria@example.com",
+  status: "active",
+  isAdmin: false,
+  price: 999.99,
+  list:[
+    'banana', 'maça', 'morango'
+  ],
+  list2:[
+    { id:1, name: 'morango', email:'morango@email.com' },
+    { id:2, name: 'banana', email:'banana@email.com'},
+    { id:3, name: 'maça', email:'maca@email.com'}
+  ],
+  list3: {
+    id: 1,
+    name: 'João',
+    fruta: 'morango',
+  }
+};
+const renderer = new HTMLRenderer(formStructure, {
+  sectionResolver,
+  imports: {
+    // Helpers adicionais disponíveis em todos os templates
+    uppercase: (str: string) => str.toUpperCase(),
+    formatCurrency: (value: number) => value.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    })
+  }
+});
+const rendered = await renderer.render(userData)
+---
+
+<Layout title="GRID"> 
+  <Fragment set:html={rendered} />
+
+  <hr/>
+
+ <div x-data="dropdown()">
+    <div 
+      id='editor'
+      class="prose max-w-none py-4" 
+      contenteditable="true"
+    > 
+      <span>Paste html</span>
+    </div>
+    <button x-on:click="convert" class="btn">
+      Parse
+    </button>
+    <hr/>
+    <pre x-text="content"></pre>
+  </div> 
+  <script is:inline>
+    // import { HtmlToJsonParser } from '../services/JsonRenderer' 
+    function dropdown(){
+      return {
+        content: '', 
+        convert(){
+          const editor = document.querySelector('#editor')
+          console.log('el', editor)
+          const parser = new HtmlToJsonParser(editor)
+          const json = parser.toJSON();
+          console.log('parsed text', json.children)
+          this.content = JSON.stringify(json.children[0], null, 2)
+        }
+      }
+    }
+    
+class HtmlToJsonParser {
+  constructor(element) {
+    if (!(element instanceof HTMLElement)) {
+      throw new Error("O parâmetro deve ser um elemento HTML.");
+    }
+    this.root = element;
+  }
+
+  parseElement(el) {
+    const obj = {
+      $el: el.tagName.toLowerCase()
+    };
+
+    // Coleta apenas atributos relevantes (por exemplo, class)
+    const className = el.getAttribute('class');
+    if (className) {
+      obj.attrs = { class: className };
+    }
+
+    // Coleta filhos (texto e elementos)
+    const children = [];
+    for (let node of el.childNodes) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent;
+        if (text.trim()) children.push(text);
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        children.push(this.parseElement(node));
+      }
+    }
+
+    if (children.length > 0) {
+      obj.children = children;
+    }
+
+    return obj;
+  }
+
+  toJSON() {
+    return this.parseElement(this.root);
+  }
+}
+
+  </script>
+</Layout>
