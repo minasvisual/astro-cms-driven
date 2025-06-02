@@ -4,9 +4,19 @@ import { HTMLRenderer } from "../services/HtmlRenderer";
 import { sections, sectionResolver } from '../services/RenderResolvers' 
 import { ResourceService } from '../services/ResourceService'
 import { cursos } from '../assets/cursos'
+import { schema as tableSchema } from '../components/sections/table'
+import { AstroRequest } from '../services/RequestService';
 
-const { limit = 5, page, sort, ...filters } = Object.fromEntries(Astro.url.searchParams.entries());
-const schema = {
+const request = new AstroRequest(Astro); 
+const userService = new ResourceService(cursos.api);
+
+const configSchema = {
+  properties:[
+    { id:'name', type: 'text' }
+  ]
+}
+
+const pageSchema = {
    $el: 'section',
    children: [
     {
@@ -16,135 +26,21 @@ const schema = {
       },
       children: ['Kanban']
     },
-    {
-       $el: 'table',
-       attrs: { 
-         class: 'table-auto w-full whitespace-nowrap', 
-       },
-       children: [
-          {
-            $el: 'thead',
-            children: [
-              {
-                $el: 'tr',  
-                attrs: {
-                  class: 'border-b border-gray-200',
-                },
-                children: [
-                  { $el: 'th', children: ['ID'], attrs: { class: 'text-left py-3 px-4' } },
-                  { $el: 'th', children: ['Título'], attrs: { class: 'text-left py-3 px-4' } },
-                  { $el: 'th', children: ['Fonte'], attrs: { class: 'text-left py-3 px-4' } },
-                  { $el: 'th', children: ['Ações'], attrs: { class: 'text-right py-3 px-4' } }
-                ]
-              }
-            ]
-          },
-          {
-            $el: 'tbody',
-            attrs: { class: '' },
-            children: [ 
-              {
-                $el: 'tr',
-                attrs: {
-                  class: 'border-b border-gray-200',
-                },
-                $for: '$data',
-                children: [
-                  {
-                    $el: 'td', 
-                    attrs: { class: 'py-3 px-4' },
-                    children: '${$row.id}'
-                  },
-                  {
-                    $el: 'td', 
-                    attrs: { class: 'py-3 px-4' },
-                    children: '${$row.title}'
-                  },
-                  {
-                    $el: 'td', 
-                    attrs: { class: 'py-3 px-4' },
-                    children: '${$row.source}'
-                  },
-                  {
-                    $el: 'td', 
-                    attrs: { class: 'py-3 px-4 text-right' },
-                    children: ['buttons']
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            $el: 'tfoot',
-            children: [
-              {
-                $el: 'tr',
-                attrs: {
-                  class: 'border-t border-gray-200',
-                },
-                children: [
-                  {
-                    $el: 'td', 
-                    attrs: {  
-                      class: 'py-3 px-4 text-right' 
-                    }, 
-                    children: [
-                      { $el: 'a',
-                        attrs: { 
-                          class: 'btn btn-primary',
-                          href: '/kanbam?page=${ query.page > 1 ? Number(query.page ?? 1) - 1 : 1 }'
-                        }, 
-                        children: ['Prev']
-                      }, 
-                    ]
-                  },
-                  { 
-                    $el: 'td', 
-                    attrs: { 
-                      colspan: '10', 
-                      class: 'py-3 px-4 text-center' 
-                    }, 
-                    children: [
-                      'Page ',
-                      '${query.page} of ${ Math.round(Number(total) / query.limit) }',
-                    ] 
-                  },
-                  {
-                    $el: 'td', 
-                    attrs: {  
-                      class: 'py-3 px-4 text-left' 
-                    }, 
-                    children: [
-                      { $el: 'a',
-                        attrs: { 
-                          class: 'btn btn-primary',
-                          href: '/kanbam?page=${ Number(query.page || 1) + 1 }'
-                        }, 
-                        children: ['Next']
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-       ]
-     } 
-   ]
-};
+    tableSchema
+  ]
+}
 
-const userService = new ResourceService(cursos.api);
 
-console.log('filters', filters, page, limit);
-const { data, total } = await userService.getAll({ 
-  filters, sort, pagination:{ page, limit }
-});  
-const renderer = new HTMLRenderer(schema, {
+console.log('filters', request.query);
+const { data, total } = await userService.getAll(request.query);  
+const renderer = new HTMLRenderer(pageSchema, {
   sectionResolver, 
 });
-const rendered = await renderer.render({ data, total, query: { sort, page, limit, filters } });
+const rendered = await renderer.render({ data, total, query: request.query });
 ---
 
 <Layout title="Kanban">  
-  <Fragment set:html={rendered} />
+  <div class="bg-white rounded-lg shadow p-2">
+    <Fragment set:html={rendered} />
+  </div>
 </Layout>

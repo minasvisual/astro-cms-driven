@@ -37,6 +37,12 @@ interface CrudConfig {
   body?: Record<string, any>;
 }
 
+interface GetAllOptions {
+  filters?: Record<string, any>;
+  sort?: string;
+  page?: number;
+  limit?: number;
+}
 export class ResourceService {
   private config: CrudConfig;
 
@@ -119,77 +125,72 @@ export class ResourceService {
     return this.buildInterpolatedObject(this.config.params || {}, context);
   }
 
-  private buildPaginationParams(
-    pagination?: { page: number; limit: number },
-    filters?: Record<string, any>,
-    sort?: { prop: string; order: 'asc' | 'desc' } | null
-  ): Record<string, any> {
+  private buildPaginationParams(options: GetAllOptions): Record<string, any> {
+    const { sort, page, limit, ...filters } = options || {};
     const result: Record<string, any> = {};
     const pg = this.config.pagination;
-    if (!pg || typeof pg !== 'object') return result;
+    const prm = this.config.params;
 
-    // Paginação
-    if (pagination) {
-      if (pg.pageField) result[pg.pageField] = pagination.page || 1;
-      if (pg.limitField) result[pg.limitField] = pagination.limit;
+    if (!pg || typeof pg !== 'object') return result;
+ 
+    if (pg.limitField) {
+      result[pg.limitField] = _.get(prm, pg.limitField, limit);
     }
 
+    // Paginação
+    if (pg.limitField && pg.pageField) {
+      result[pg.pageField] = page ?? 1;
+    }
+
+
     // Ordenação
-    if (sort && pg.sortField && pg.sortExp) {
+    if (sort && typeof sort === 'string'  && pg.sortField && pg.sortExp) {
+      const [prop, order] = sort.startsWith('-')
+        ? [sort.substring(1), 'desc']
+        : [sort, 'asc'];
+
       result[pg.sortField] = this.interpolate(pg.sortExp, {
-        prop: sort.prop,
-        sort:
-          sort.order === 'asc'
-            ? pg.sortAscChar ?? 'asc'
-            : pg.sortDescChar ?? 'desc',
+        prop,
+        sort: order === 'asc' ? (pg.sortAscChar ?? 'asc') : (pg.sortDescChar ?? 'desc'),
       });
     }
 
     // Filtros
-    for (const prop in filters || {}) {
-      const val = filters?.[prop];
-      if (
-        val === undefined ||
-        val === null ||
-        val === '' ||
-        (typeof val === 'number' && isNaN(val))
-      )
-        continue;
+    if (filters && pg.filterField) {
+      for (const prop in filters) {
+        const val = filters[prop];
+        if (
+          val === undefined ||
+          val === null ||
+          val === '' ||
+          (typeof val === 'number' && isNaN(val))
+        ) continue;
 
-      const field = this.interpolate(pg.filterField ?? prop, { prop });
-      result[field] = this.interpolate(pg.filterExp ?? '{value}', {
-        value: val,
-        prop,
-      });
+        const field = this.interpolate(pg.filterField, { prop });
+        result[field] = pg.filterExp
+          ? this.interpolate(pg.filterExp, { value: val, prop })
+          : val;
+      }
     }
 
     return result;
-  }
+  } 
 
   // ======================== Métodos CRUD =============================
 
   async getAll(
-    options: {
-      query?: Record<string, any>;
-      filters?: Record<string, any>;
-      sort?: { prop: string; order: 'asc' | 'desc' };
-      pagination?: { page: number; limit: number };
-    } = {}
+    options: GetAllOptions = {}
   ): Promise<{ data: any[]; total: number }> {
-    const {
-      query = {},
-      filters = {},
-      sort = null,
-      pagination = undefined,
+    const { 
+      sort, 
+      page, 
+      limit, 
+      ...filters
     } = options;
 
-    const paginationParams = this.buildPaginationParams(
-      pagination,
-      filters,
-      sort
-    );
-    const fixedParams = this.buildParams({ ...query, ...filters });
-    const allParams = { ...fixedParams, ...paginationParams, ...query };
+    const paginationParams = this.buildPaginationParams(options);
+    const fixedParams = this.buildParams(options);
+    const allParams = { ...fixedParams, ...paginationParams, ...filters };
 
     const url = this.buildUrl(this.config.urlGet, { query: '' }, '/');
     const fullUrl = `${url}${this.buildQueryParams(allParams)}`;
