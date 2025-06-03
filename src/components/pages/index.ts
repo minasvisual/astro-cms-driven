@@ -14,13 +14,10 @@ export const baseSchema = (schemas) => ({
     }, 
   ]
 })
-  
-const page1 = baseSchema('Page1')
-const page1test = baseSchema('Page1Test')
-const page1test1 = baseSchema('Page1Test1')
+   
 const page404 = baseSchema('404') 
 
-const router = {
+export const router = {
   '/dash': dashSchema,
   '/page': staticSchema,
   '/page/:id': dynamicSchema,

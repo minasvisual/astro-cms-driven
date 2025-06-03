@@ -120,11 +120,9 @@ const rendered = await renderer.render(userData)
       return {
         content: '', 
         convert(){
-          const editor = document.querySelector('#editor')
-          console.log('el', editor)
+          const editor = document.querySelector('#editor') 
           const parser = new HtmlToJsonParser(editor)
-          const json = parser.toJSON();
-          console.log('parsed text', json.children)
+          const json = parser.toJSON(); 
           this.content = JSON.stringify(json.children[0], null, 2)
         }
       }

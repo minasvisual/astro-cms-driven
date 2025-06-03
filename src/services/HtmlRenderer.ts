@@ -138,8 +138,7 @@ export class HTMLRenderer {
     if (typeof node === 'string') {
       return this.interpolate(node, data);
     }
-
-    console.log(node);
+ 
     if (node.$section) {
       if (!this.sectionResolver) return '';
       node = (await this.sectionResolver(
