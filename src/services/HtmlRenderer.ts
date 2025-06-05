@@ -9,6 +9,7 @@ interface ElementNode {
   $else?: string;
   $for?: string | { data: string };
   $section?: string;
+  slot?: any[];
   attrs?: { [key: string]: string | TemplateValue };
   children?: Array<ElementNode | string>;
 }
@@ -17,7 +18,7 @@ export class HTMLRenderer {
   private rootNode: ElementNode;
   private templateSettings: _.TemplateSettings;
   private compiledTemplates: Map<string, _.TemplateExecutor>;
-  private sectionResolver: (slug: string) => Promise<string | ElementNode>;
+  private sectionResolver: (slug: string, slot?: any[], data: any) => Promise<string | ElementNode>;
 
   constructor(node: ElementNode, customSettings?: _.TemplateSettings) {
     this.rootNode = node;
@@ -51,8 +52,8 @@ export class HTMLRenderer {
       'source',
       'track',
       'wbr',
-    ];
-    return voidElements.includes(tagName.toLowerCase());
+    ]; 
+    return voidElements.includes(tagName?.toLowerCase());
   }
 
   private compileTemplate(template: string): _.TemplateExecutor {
@@ -142,7 +143,9 @@ export class HTMLRenderer {
     if (node.$section) {
       if (!this.sectionResolver) return '';
       node = (await this.sectionResolver(
-        node.$section
+        node.$section,
+        node.slot,
+        data
       )) as unknown as ElementNode;
       if (!node || typeof node !== 'object' || !node.$el) {
         return '';
@@ -172,6 +175,81 @@ export class HTMLRenderer {
     return `${openingTagComplete}${children}</${tag}>`;
   }
 
+  private async processNode(
+    node: ElementNode | string,
+    data: TemplateObject
+  ): Promise<ElementNode | ElementNode[] | string> {
+    if (!node) return '';
+  
+    if (typeof node === 'string') {
+      return this.interpolate(node, data);
+    }
+  
+    if (node.$section) {
+      const resolved = await this.sectionResolver(node.$section, node.slot, data);
+      if (!resolved || typeof resolved !== 'object') {
+        return '';
+      }
+      node = resolved as ElementNode;
+    }
+  
+    if (node.$if && this.interpolate(node.$if, data) !== 'true') {
+      return node.$else || '';
+    }
+  
+    // Clona o node para evitar mutação do original
+    const newNode: ElementNode = {
+      ..._.omit(node, ['$for']),
+      attrs: node.attrs
+        ? Object.fromEntries(
+            Object.entries(node.attrs).map(([k, v]) => [k, this.interpolate(v, data)])
+          )
+        : undefined,
+    };
+  
+    if (node.$for) {
+      const forExp = _.get(node, '$for.data', node.$for);
+      const list = _.get(data, forExp.replace('$', ''), []);
+      const isObject = typeof list === 'object' && !Array.isArray(list);
+      const iterates = isObject ? Object.keys(list) : list;
+  
+      const repeatedChildren: ElementNode[] = [];
+  
+      for (let index = 0; index < iterates.length; index++) {
+        const key = isObject ? iterates[index] : index;
+        const row = isObject ? list[key] : iterates[index];
+        const context = { ...data, $row: row, $key: key };
+        const clonedNode = _.omit(node, ['$for']);
+        const processed = await this.processNode(clonedNode, context);
+        if (processed && typeof processed === 'object') {
+          repeatedChildren.push(processed as ElementNode);
+        }
+      }
+  
+      return repeatedChildren
+    }
+  
+    if (node.children && Array.isArray(node.children)) { 
+      let childs: ElementNode[] = []
+      node.children.forEach(child => {
+        if(Array.isArray(child))
+          childs = [...childs, ...child]
+        else
+          childs.push(child)
+      })
+      const processedChildren = await Promise.all(
+        childs.map((child) => this.processNode(child, data))
+      );
+      newNode.children = processedChildren.filter(Boolean) as (ElementNode | string)[];
+    }
+  
+    return newNode;
+  }
+  
+  public async getSchema(data: TemplateObject = {}): Promise<ElementNode | string> {
+    return await this.processNode(this.rootNode, data);
+  }
+  
   public async render(data: TemplateObject = {}): Promise<string> {
     return await this.renderNode(this.rootNode, data);
   }

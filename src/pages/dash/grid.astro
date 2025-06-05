@@ -1,0 +1,81 @@
+---
+import Layout from '../../layout/Layout.astro';
+import { HTMLRenderer } from "../../services/HtmlRenderer";
+import { sections, sectionResolver } from '../../services/RenderResolvers'
+ 
+---
+
+<Layout title="GRID">  
+
+ <div x-data="dropdown()">
+    <div 
+      id='editor'
+      class="prose max-w-none py-4" 
+      contenteditable="true"
+    > 
+      <span>Paste html</span>
+    </div>
+    <button x-on:click="convert" class="btn">
+      Parse
+    </button>
+    <hr/>
+    <pre x-text="content"></pre>
+  </div> 
+  <script is:inline>
+    // import { HtmlToJsonParser } from '../services/JsonRenderer' 
+    function dropdown(){
+      return {
+        content: '', 
+        convert(){
+          const editor = document.querySelector('#editor') 
+          const parser = new HtmlToJsonParser(editor)
+          const json = parser.toJSON(); 
+          this.content = JSON.stringify(json.children[0], null, 2)
+        }
+      }
+    }
+    
+class HtmlToJsonParser {
+  constructor(element) {
+    if (!(element instanceof HTMLElement)) {
+      throw new Error("O parâmetro deve ser um elemento HTML.");
+    }
+    this.root = element;
+  }
+
+  parseElement(el) {
+    const obj = {
+      $el: el.tagName.toLowerCase()
+    };
+
+    // Coleta apenas atributos relevantes (por exemplo, class)
+    const className = el.getAttribute('class');
+    if (className) {
+      obj.attrs = { class: className };
+    }
+
+    // Coleta filhos (texto e elementos)
+    const children = [];
+    for (let node of el.childNodes) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent;
+        if (text.trim()) children.push(text);
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        children.push(this.parseElement(node));
+      }
+    }
+
+    if (children.length > 0) {
+      obj.children = children;
+    }
+
+    return obj;
+  }
+
+  toJSON() {
+    return this.parseElement(this.root);
+  }
+}
+
+  </script>
+</Layout>

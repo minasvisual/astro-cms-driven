@@ -1,0 +1,131 @@
+---
+import Layout from '../../layout/Layout.astro';
+import { HTMLRenderer } from "../../services/HtmlRenderer";
+import { sections, sectionResolver } from '../../services/RenderResolvers' 
+import { ResourceService } from '../../services/ResourceService'
+import { cursos } from '../../assets/cursos'
+import { schema as tableSchema } from '../../components/sections/table'
+import { AstroRequest } from '../../services/RequestService';
+
+const request = new AstroRequest(Astro); 
+const userService = new ResourceService(cursos.api);
+
+const configSchema = {
+  properties:[
+    { id:'name', type: 'text' }
+  ]
+}
+const formStructure = {
+	$el: 'div',
+  children: [
+    {
+      $el: 'div',
+      attrs: {
+        id: 'container',
+        class: 'main-content',
+        'data-role': 'page'
+      },
+      children: [
+        { $section:'header', },
+        { $section:'menu' },
+        {
+          $el: 'p',
+          attrs: {
+            class: 'text-2xl'
+          },
+          children: ['Olá ${name} Título Principal']
+        },
+        {
+          $el: 'p',
+          attrs: {
+            class: 'description'
+          },
+          children: [
+            'Este é um parágrafo com ',
+            {
+              $el: 'strong',
+              children: ['${email}']
+            },
+            ' e um ',
+            {
+              $el: 'a',
+              attrs: {
+                href: 'https://exemplo.com',
+                target: '_blank'
+              },
+              children: ['link']
+            }
+          ]
+        },
+        "${isAdmin ? '<span class=\"admin\">Administrador</span>' : ''}",
+        ` <p>Frutas</p>
+        	<ul class="menu ">
+            <% _.forEach(list, function(user) { %>
+              <li class="text-red-500"><%- user %></li>
+            <% }); %>
+          </ul>
+        `,
+      	'Preço: ${formatCurrency(price)}',
+        '<br/>', 
+        { $section:'table', },
+        { $section:'footer', },
+      ]
+    } 
+  ]
+};
+const pageSchema = {
+   $el: 'section',
+   children: [
+    {
+      $el: 'h1',
+      attrs: {
+        class: 'text-3xl font-bold mb-4'
+      },
+      children: ['Kanban']
+    },
+    tableSchema,
+    formStructure
+  ]
+}
+const userData = {
+  id: 123,
+  name: "Maria Silva",
+  email: "maria@example.com",
+  status: "active",
+  isAdmin: false,
+  price: 999.99,
+  list:[
+    'banana', 'maça', 'morango'
+  ],
+  list2:[
+    { id:1, name: 'morango', email:'morango@email.com' },
+    { id:2, name: 'banana', email:'banana@email.com'},
+    { id:3, name: 'maça', email:'maca@email.com'}
+  ],
+  list3: {
+    id: 1,
+    name: 'João',
+    fruta: 'morango',
+  }
+};
+
+let rendered;
+try{
+  console.log('filters', request.query);
+  const { data, total } = await userService.getAll(request.query);  
+  const renderer = new HTMLRenderer(pageSchema, {
+    sectionResolver, 
+  });
+  rendered = await renderer.render({ userData, data, total, query: request.query });
+} catch(err) {
+  let data = [];
+  let total = 0; 
+  rendered = 'Error '+ JSON.stringify(err.response?.data) ?? err.message;
+}
+---
+
+<Layout title="Kanban">  
+  <div class="bg-white rounded-lg shadow p-2">
+    <Fragment set:html={rendered} />
+  </div>
+</Layout>

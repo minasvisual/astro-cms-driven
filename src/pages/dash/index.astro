@@ -1,7 +1,7 @@
 ---
-import Layout from '../layout/Layout.astro';
-import { ResourceService } from '../services/ResourceService'
-import { FormBuilder } from '../services/FormService'
+import Layout from '../../layout/Layout.astro';
+import { ResourceService } from '../../services/ResourceService'
+import { FormBuilder } from '../../services/FormService'
 import { actions } from 'astro:actions';
 
 const start = parseInt(Astro.url.searchParams.get('start') || '0');
@@ -26,8 +26,7 @@ const prevStart = Math.max(0, start - limit);
 const nextStart = start + limit;
 
 const { data:users } = await userService.getAll({
-  pagination: { page: start, limit },
-  filters: { email: search }
+  page: start, limit, email: search
 });
 
 // Field definitions with metadata
