@@ -1,3 +1,4 @@
+import { el } from "../../assets/helpers"
 import { sectionResolver } from "../sections/index"
 import { dashSchema } from "./dashboard"
 import { dynamicSchema } from "./dynamic"
@@ -23,7 +24,7 @@ export const router = {
   '/': {
     label: 'Home', 
     schema: homeSchema
-  },
+  }, 
   '/dash': {
     label: 'Dashboard',
     icon: 'fa fa-home',
