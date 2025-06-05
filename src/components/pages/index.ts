@@ -1,5 +1,7 @@
+import { sectionResolver } from "../sections/index"
 import { dashSchema } from "./dashboard"
 import { dynamicSchema } from "./dynamic"
+import { homeSchema } from "./home"
 import { staticSchema } from "./static"
 
 export const baseSchema = (schemas) => ({
@@ -18,27 +20,63 @@ export const baseSchema = (schemas) => ({
 const page404 = baseSchema('404') 
 
 export const router = {
-  '/dash': dashSchema,
-  '/page': staticSchema,
-  '/page/:id': dynamicSchema,
-  '/page/:id/test': dynamicSchema,
-  '/page/:id/test/:id2': dynamicSchema,
+  '/': {
+    label: 'Home', 
+    schema: homeSchema
+  },
+  '/dash': {
+    label: 'Dashboard',
+    icon: 'fa fa-home',
+    target: 'dashboard',
+    schema: dashSchema
+  },
+  '/dash/page': { 
+    label: 'Products',
+    icon: 'fa fa-box',
+    target: 'dashboard',
+    schema: staticSchema
+  },
+  '/page': {
+    label: 'Products', 
+    schema: staticSchema
+  },
+  '/page/:id': { 
+    label: 'Product Detail', 
+    schema: dynamicSchema
+  },
+  '/page/:id/test': { 
+    label: 'Product Detail', 
+    schema: dynamicSchema
+  },
+  '/page/:id/test/:id2': { 
+    label: 'Product Detail', 
+    schema: dynamicSchema
+  },
 }
 
-export const pageResolvers = {}
+export const getMenus = (targets:string[] = []) => {    
+  const menus = Object.keys(router).filter(
+    m => targets.includes(router[m].target) 
+  )
+  return menus.map(m => ({ ...router[m], path:m }))
+}
+
+export const pageResolvers = {
+  sectionResolver
+}
 
 export async function matchRoute(url: string) {
   try {
     const routerKeys = Object.keys(router);
-
     for (const route of routerKeys) {
       // Transforma /page/:id/test/:id2 em ^/page/[^/]+/test/[^/]+$
       const pattern = route.replace(/:[^/]+/g, '[^/]+');
       const regex = new RegExp(`^${pattern}$`);
-      if (regex.test(url)) {
+      if (regex.test(url)) { 
+        const record = router[route]
         return {
           route,
-          schema: router[route]
+          ...record
         };
       }
     }

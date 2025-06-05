@@ -1,10 +1,12 @@
 ---
 import '../assets/global.css'
+import { getMenus } from '../components/pages/index'
 interface Props {
   title?: string;
 }
 
 const { title = "Admin Dashboard" } = Astro.props;
+const menus = getMenus(['dashboard','logged']) 
 ---
 
 <html lang="en">
@@ -13,6 +15,7 @@ const { title = "Admin Dashboard" } = Astro.props;
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width" />
     <title>{title} - AstroAdmin</title>
+    <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css">
     <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/light.css" />
     <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/shoelace-autoloader.js"></script>
@@ -48,17 +51,25 @@ const { title = "Admin Dashboard" } = Astro.props;
         </div>
         <nav class="p-4 flex-1">
           <ul class="space-y-1.5">
+{ 
+  menus.map(menu => (
             <li>
-              <a href="/" class="flex items-center px-3 py-2 text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 group"
+              <a href={menu.path} class="flex items-center px-3 py-2 text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 group"
                 x-data
                 x-tooltip="!sidebarOpen && !isHovered ? 'Dashboard' : ''"
               >
-                <svg class="w-5 h-5" :class="(sidebarOpen || isHovered) ? 'mr-3' : 'mx-auto'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M3 12L5 10M5 10L12 3L19 10M5 10V20C5 20.5523 5.44772 21 6 21H9M19 10L21 12M19 10V20C19 20.5523 18.5523 21 18 21H15M9 21C9.55228 21 10 20.5523 10 20V16C10 15.4477 10.4477 15 11 15H13C13.5523 15 14 15.4477 14 16V20C14 20.5523 14.4477 21 15 21M9 21H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span x-show="sidebarOpen || isHovered">Dashboard</span>
+                <i class={`${menu.icon ?? 'fa fa-cog'} pr-5 text-sm`}></i>
+                <span x-show="sidebarOpen || isHovered">{menu.label}</span>
               </a>
             </li>
+  ))
+}
+          </ul>
+        </nav>
+        
+        <!-- Footer Links -->
+        <div class="p-4 border-t">
+          <ul class="space-y-1.5">
             <li>
               <a href="/tables" class="flex items-center px-3 py-2 text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 group"
                 x-data
@@ -108,12 +119,6 @@ const { title = "Admin Dashboard" } = Astro.props;
                 <span x-show="sidebarOpen || isHovered">Settings</span>
               </a>
             </li>
-          </ul>
-        </nav>
-        
-        <!-- Footer Links -->
-        <div class="p-4 border-t">
-          <ul class="space-y-1.5">
             <li>
               <a href="/settings" class="flex items-center px-3 py-2 text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 group"
                 x-data

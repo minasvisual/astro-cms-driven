@@ -13,17 +13,7 @@ const rendered = await renderer.render({
   query: request.query,
   body: await request.body
 })
-
-console.log('params', reqParams, request.params)
 ---
-<Layout title="Dynamic page">
-  <ul class="flex mb-3"> 
-      <li class="mr-6">
-        <a class="text-blue-500 hover:text-blue-800" href="/dash">Dashboard</a>
-      </li> 
-      <li class="mr-6">
-        <a class="text-blue-500 hover:text-blue-800" href="/page">Pages</a>
-      </li>  
-  </ul>
+<Layout title="Dynamic page"> 
   <Fragment set:html={rendered} />
 </Layout>

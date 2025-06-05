@@ -190,7 +190,7 @@ export class ResourceService {
 
     const paginationParams = this.buildPaginationParams(options);
     const fixedParams = this.buildParams(options);
-    const allParams = { ...fixedParams, ...paginationParams, ...filters };
+    const allParams = { ...fixedParams, ...paginationParams };
 
     const url = this.buildUrl(this.config.urlGet, { query: '' }, '/');
     const fullUrl = `${url}${this.buildQueryParams(allParams)}`;
