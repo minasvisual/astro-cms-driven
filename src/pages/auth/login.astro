@@ -5,6 +5,10 @@ import Layout from "@/layout/Public.astro";
 // Check if user is already authenticated on server side
 const token = Astro.cookies.get('auth-token')?.value;
 const request = new AstroRequest(Astro);
+
+if(request.query?.action === 'logout'){
+  Astro.cookies.delete('auth-token', { path:'/' });   
+}
 ---
 <Layout>
   <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -91,6 +95,7 @@ const request = new AstroRequest(Astro);
         </form>
  
         <div class="mt-6">
+          <a href="/" class="text-center">< Back to home</a>
           <div class="text-center text-sm text-gray-600">
             <p>Demo credentials:</p>
             <p class="font-mono text-xs mt-1">

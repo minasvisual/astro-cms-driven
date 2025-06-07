@@ -1,4 +1,5 @@
 ---
+import { AstroRequest } from '@/services/RequestService';
 import '../assets/global.css' 
 import { getMenus } from '../components/pages/index'
 interface Props {
@@ -7,8 +8,9 @@ interface Props {
 
 const { title = "Admin Dashboard" } = Astro.props;
 const { user } = Astro.locals
-const menus = await getMenus(['dashboard','logged']) 
-console.log(menus)
+const menus = await getMenus(['dashboard','logged'])  
+const request = new AstroRequest(Astro)
+
 ---
 
 <html lang="en">
@@ -133,7 +135,7 @@ console.log(menus)
               </a>
             </li>
             <li>
-              <a href="/auth/logout" class="flex items-center px-3 py-2 text-red-600 rounded-lg hover:bg-red-50 group"
+              <a href="/auth/login?action=logout" class="flex items-center px-3 py-2 text-red-600 rounded-lg hover:bg-red-50 group"
                 x-data
                 x-tooltip="!sidebarOpen && !isHovered ? 'Logout' : ''"
               >
@@ -257,8 +259,7 @@ console.log(menus)
     </div>
 
     <script>
-      import tippy from 'tippy.js';
-      
+      import tippy from 'tippy.js'; 
       // Initialize tooltips
       document.addEventListener('alpine:init', () => {
         Alpine.directive('tooltip', (el, { expression }) => {
