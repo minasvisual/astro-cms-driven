@@ -1,0 +1,135 @@
+---
+import { AstroRequest } from "@/services/RequestService";
+import Layout from "@/layout/Public.astro";
+
+// Check if user is already authenticated on server side
+const token = Astro.cookies.get('auth-token')?.value;
+const request = new AstroRequest(Astro);
+---
+<Layout>
+  <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+      <div>
+        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          Sign in to your account
+        </h2>
+        <p class="mt-2 text-center text-sm text-gray-600">
+          Enter your credentials to access the admin dashboard
+        </p>
+      </div>
+      
+      <div  
+        class="mt-8 space-y-6"
+      >
+        <div id="alerts" class="capitalize">
+          { request.query?.error && <div class="alert alert-error">{ request.query?.error }</div> }
+        </div>
+          
+        <form id="loginForm" class="space-y-6">
+          <div class="space-y-4">
+            <div>
+              <label for="email" class="block text-sm font-medium text-gray-700">
+                Email address
+              </label>
+              <input
+                id="email"
+                name="username"
+                type="email"
+                autocomplete="email"
+                required
+                class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                placeholder="Enter your email"
+                value="admin@example.com"
+              />
+            </div>
+            
+            <div>
+              <label for="password" class="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                required
+                class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                placeholder="Enter your password"
+                value="password123"
+              />
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label for="remember-me" class="ml-2 block text-sm text-gray-900">
+                Remember me
+              </label>
+            </div>
+
+            <div class="text-sm">
+              <a href="#" class="font-medium text-blue-600 hover:text-blue-500">
+                Forgot your password?
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="submit" 
+              class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span>Sign in</span> 
+            </button>
+          </div>
+        </form>
+ 
+        <div class="mt-6">
+          <div class="text-center text-sm text-gray-600">
+            <p>Demo credentials:</p>
+            <p class="font-mono text-xs mt-1">
+              Email: admin@example.com<br>
+              Password: password123
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    import { actions } from 'astro:actions';
+    import { navigate } from 'astro:transitions/client';
+
+    const form = document.querySelector('#loginForm');
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const formData = new FormData(form);
+      const { error, data } = await actions.login(formData); 
+      let message = data.message
+
+      if (!error) { 
+        console.error('Login error:', data)
+        document.cookie = `auth-token=${data.token}; path=/; max-age=${24 * 60 * 60}; secure; samesite=strict`;
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1000);
+        return navigate('/dash');
+      } 
+
+      message = error.message
+      document.querySelector('#alerts').innerHTML = `
+        <div class="toast">
+          <div class="alert alert-info">
+            <span>${message}.</span>
+          </div>
+        </div>
+      `
+    })
+  </script> 
+</Layout>

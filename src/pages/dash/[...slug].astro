@@ -5,7 +5,7 @@ import { AstroRequest } from "../../services/RequestService"
 import { HTMLRenderer } from "../../services/HtmlRenderer"
 
 const request = new AstroRequest(Astro) 
-const { route, schema } = <any> await matchRoute(Astro.url.pathname) 
+const { route, schema } = <any> await matchRoute(Astro.url.pathname)  
 const reqParams = request.pathToObject(route)
 const renderer = new HTMLRenderer(schema, pageResolvers);
 const rendered = await renderer.render({
