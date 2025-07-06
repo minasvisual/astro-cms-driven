@@ -32,12 +32,14 @@ export class PagesService {
     await this.loadMenus()
     const menus = Object.keys(router).filter(
       m => targets.includes(router[m].target) 
-    ) 
+    )
+    console.log('get menus', menus)
     return menus.map(m => ({ ...router[m], path:m }))
   }
 
   async getRouteSchema(url: string): Promise<any> {    
-    const {data} = await axios.get(this.SOURCE_URL + `?filter=url,eq,${url}`); 
+    const {data} = await axios.get(this.SOURCE_URL + `?filter=url,eq,${url}`);
+    console.log('getRouteSchema', data)
     if( data.length === 0 ) throw new Error(`Page not found: ${url}`);
     return data[0].schema
   }

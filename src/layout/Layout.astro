@@ -1,15 +1,13 @@
 ---
-import '../assets/global.css'
+import '../assets/global.css' 
 import { getMenus } from '../components/pages/index'
 interface Props {
   title?: string;
 }
 
 const { title = "Admin Dashboard" } = Astro.props;
-const { user } = Astro.locals;
-const menus = await getMenus(['dashboard','logged']) 
-
-console.log(user)
+const { user } = Astro.locals
+const menus = await getMenus(['dashboard','logged'])  
 ---
 
 <html lang="en">
