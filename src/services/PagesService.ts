@@ -19,7 +19,8 @@ export class PagesService {
 
   async loadMenus(force = false): Promise<{ [url: string]: routeSchema }> {
     if( !force && Object.keys(router).length > 0 ) return router;
-    const { data:menus } = await axios.get(import.meta.env.SOURCE_URL + '?fields=id,label,url,icon,target'); 
+    const { data:menus } = await axios.get(this.SOURCE_URL + '?fields=id,label,url,icon,target'); 
+    console.log(menus)
     router = menus.reduce((acc, m) => {
       acc[m.url] = m;
       return acc
