@@ -7,7 +7,7 @@ interface Props {
 
 const { title = "Admin Dashboard" } = Astro.props;
 const { user } = Astro.locals;
-const menus = getMenus(['dashboard','logged']) 
+const menus = await getMenus(['dashboard','logged']) 
 
 console.log(user)
 ---
