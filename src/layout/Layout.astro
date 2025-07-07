@@ -1,16 +1,15 @@
 ---
-import { AstroRequest } from '@/services/RequestService';
-import '../assets/global.css' 
+import '../assets/global.css'
 import { getMenus } from '../components/pages/index'
 interface Props {
   title?: string;
 }
 
 const { title = "Admin Dashboard" } = Astro.props;
-const { user } = Astro.locals
-const menus = await getMenus(['dashboard','logged'])  
-const request = new AstroRequest(Astro)
+const { user } = Astro.locals;
+const menus = getMenus(['dashboard','logged']) 
 
+console.log(user)
 ---
 
 <html lang="en">
@@ -20,8 +19,9 @@ const request = new AstroRequest(Astro)
     <meta name="viewport" content="width=device-width" />
     <title>{title} - AstroAdmin</title>
     <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css">
-    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css" /> 
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" /> 
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/light.css" />
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/shoelace-autoloader.js"></script>
 
   </head>
   <body class="bg-gray-50" x-data="{ sidebarOpen: true, searchOpen: false, profileOpen: false, isHovered: false }">
@@ -135,7 +135,7 @@ const request = new AstroRequest(Astro)
               </a>
             </li>
             <li>
-              <a href="/auth/login?action=logout" class="flex items-center px-3 py-2 text-red-600 rounded-lg hover:bg-red-50 group"
+              <button onclick="logout()" class="flex items-center px-3 py-2 text-red-600 rounded-lg hover:bg-red-50 group"
                 x-data
                 x-tooltip="!sidebarOpen && !isHovered ? 'Logout' : ''"
               >
@@ -143,7 +143,7 @@ const request = new AstroRequest(Astro)
                   <path d="M17 16L21 12M21 12L17 8M21 12H9M9 21H7C5.89543 21 5 20.1046 5 19V5C5 3.89543 5.89543 3 7 3H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
                 <span x-show="sidebarOpen || isHovered">Logout</span>
-              </a>
+              </button>
             </li>
           </ul>
         </div>
@@ -225,7 +225,7 @@ const request = new AstroRequest(Astro)
                   @click="open = !open"
                   class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold focus:outline-none"
                 >
-                  { user?.name?.charAt(0).toUpperCase() || 'U' }
+                  { user.name?.charAt(0) }
                 </button>
                 <!-- Dropdown menu -->
                 <div
@@ -239,7 +239,7 @@ const request = new AstroRequest(Astro)
                   x-transition:leave-end="transform opacity-0 scale-95"
                   class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 z-50"
                 >
-                  <span class="disabled block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{ user?.name }</span>
+                  <span class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{ user.name }</span>
                   <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your Profile</a>
                   <a href="/settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
                   <a href="/help" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Help Center</a>
@@ -259,7 +259,8 @@ const request = new AstroRequest(Astro)
     </div>
 
     <script>
-      import tippy from 'tippy.js'; 
+      import tippy from 'tippy.js';
+      
       // Initialize tooltips
       document.addEventListener('alpine:init', () => {
         Alpine.directive('tooltip', (el, { expression }) => {
@@ -269,6 +270,33 @@ const request = new AstroRequest(Astro)
           });
         });
       });
+
+      async function logout() {
+        try {
+          const response = await fetch('/api/auth/logout', {
+            method: 'POST'
+          });
+          
+          if (response.ok) {
+            // Clear any client-side storage if needed
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Redirect to login
+            window.location.href = '/auth/login';
+          } else {
+            console.error('Logout failed');
+            // Force redirect anyway
+            window.location.href = '/auth/login';
+          }
+        } catch (error) {
+          console.error('Logout error:', error);
+          // Force redirect anyway
+          window.location.href = '/auth/login';
+        }
+      }
+      // Make logout function globally available
+      window.logout = logout;
     </script>
   </body>
 </html>

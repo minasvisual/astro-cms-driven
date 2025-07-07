@@ -4,5 +4,5 @@ import alpinejs from '@astrojs/alpinejs';
 
 export default defineConfig({
   output: 'server',
-  integrations: [tailwind(), alpinejs()],
+  integrations: [tailwind(), alpinejs()], 
 });
